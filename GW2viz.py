@@ -106,12 +106,18 @@ def valueSellItems(rarity, Mgold, Msilver, Mcopper, Bgold, Bsilver, Bcopper):
 
     tM = np.sum(cBlue+cGreen+cYellow)
     tB = np.sum(sBlue+sGreen+sYellow)
+    stM = str(tM)
+    totalVM = stM[:-4] + "g " + stM[-4:-2] + "s " + stM[-2:] + "c"
+    stB = str(tB)
+    totalVB = stB[:-4] + "g " + stB[-4:-2] + "s " + stB[-2:] + "c"
 
     plt.ylabel("Copper")
     plt.title("Sell Price of Unidentified Gear (Merchant vs. Black Lion Market)")
     plt.xticks((1, 2), ("Merchant", "Market"))
     plt.legend((blueM, greenM, yellowM),('Common', 'Uncommon', 'Rare'))
-    plt.text(1.2,400000,"{0:.1%}".format(((tB - tM)/tB)) + " difference")
+    plt.text(1.4,150000, "%.2f Times" % (tB/tM))
+    plt.text(x = 0.95, y = tM + (tM*0.01), s = totalVM)
+    plt.text(x = 1.95, y = tB + (tB*0.01), s = totalVB)
 
     plt.show()
 
@@ -167,15 +173,16 @@ def posRar(color, rarityC):
     return pList
 
 #Function to plot stack bar charts for given input
-def valueSellId(rarity, Msilver, Mcopper, Bsilver, Bcopper):
+def valueSellId(rarity, count, Msilver, Mcopper, Bsilver, Bcopper):
     uRarity = rarity
+    uCount = count
     uMSilver = Msilver
     uMCopper = Mcopper
     uBSilver = Bsilver
     uBCopper = Bcopper
     width = 0.5
 
-    def rarityMPos(color, uRarity):
+    def rarMPos(color, uRarity):
 
         posList = posRar(color, uRarity)
         tMCopper = 0
@@ -186,7 +193,7 @@ def valueSellId(rarity, Msilver, Mcopper, Bsilver, Bcopper):
             
         return int(tMCopper)
 
-    def rarityBPos(color, uRarity):
+    def rarBPos(color, uRarity):
 
         posList = posRar(color, uRarity)
         tBCopper = 0
@@ -197,9 +204,33 @@ def valueSellId(rarity, Msilver, Mcopper, Bsilver, Bcopper):
             
         return int(tBCopper)
 
-    cBnG = rarityMPos("G/B", uRarity)
-    cYellow = rarityMPos("Y", uRarity)
-    cOrange = rarityMPos("O", uRarity)
+    def rarityMPos(color, uRarity, Count):
+
+        posList = posRar(color, uRarity)
+        tMCopper = 0
+        for i in posList:
+            tMC = singleTValue(uMSilver[i], uMCopper[i])
+            tMC = tMC * Count[i]
+
+            tMCopper += tMC
+            
+        return int(tMCopper)
+
+    def rarityBPos(color, uRarity, Count):
+
+        posList = posRar(color, uRarity)
+        tBCopper = 0
+        for i in posList:
+            tBC = singleTValue(uBSilver[i], uBCopper[i])
+            tBC = tBC * Count[i]
+
+            tBCopper += tBC
+            
+        return int(tBCopper)
+
+    cBnG = rarMPos("G/B", uRarity)
+    cYellow = rarityMPos("Y", uRarity, uCount)
+    cOrange = rarityMPos("O", uRarity, uCount)
 
     bngM = plt.bar(1, cBnG, width, color="blue")
     yellowM = plt.bar(1, cYellow, width,
@@ -208,9 +239,9 @@ def valueSellId(rarity, Msilver, Mcopper, Bsilver, Bcopper):
                       bottom=(cBnG + cYellow),
                       color="orange")
 
-    sBnG = rarityBPos("G/B", uRarity)
-    sYellow = rarityBPos("Y", uRarity)
-    sOrange = rarityBPos("O", uRarity)
+    sBnG = rarBPos("G/B", uRarity)
+    sYellow = rarityBPos("Y", uRarity, uCount)
+    sOrange = rarityBPos("O", uRarity, uCount)
 
     bngB = plt.bar(2, sBnG, width, color="blue")
     yellowB = plt.bar(2, sYellow, width,
@@ -221,30 +252,35 @@ def valueSellId(rarity, Msilver, Mcopper, Bsilver, Bcopper):
 
     tM = np.sum(cBnG+cYellow+cOrange)
     tB = np.sum(sBnG+sYellow+sOrange)
+    stM = str(tM)
+    totalVM = stM[:-4] + "g " + stM[-4:-2] + "s " + stM[-2:] + "c"
+    stB = str(tB)
+    totalVB = stB[:-4] + "g " + stB[-4:-2] + "s " + stB[-2:] + "c"
 
     plt.ylabel("Copper")
     #Title needs to be manually changed
-    plt.title("Sell Price of Yellow-Unidentified Gear (Merchant vs. Black Lion Market)")
+    plt.title("Sell Price of Green-Unidentified Gear (Merchant vs. Black Lion Market)")
     plt.xticks((1, 2), ("Merchant", "Market"))
     plt.legend((bngM, yellowM, orangeM),('C/UnC', 'Rare', 'Exotic'))
     #Displays percentage difference between selling to the merchant
     #and selling on the Black Lion Market
     #(first variable changes horizontal position, second changes vertical position)
-    plt.text(1.4,150000,"{0:.1%}".format(((tB - tM)/tB)) + " difference")
+    plt.text(1.4,150000, "%.2f Times" % (tB/tM))
+    plt.text(x = 0.95, y = tM + (tM*0.01), s = totalVM)
+    plt.text(x = 1.95, y = tB + (tB*0.01), s = totalVB)
 
     plt.show()
 
 '''
 #Returns stacked bar chart for sell value of Bleue Unidentified Gear(Common)
-valueSellId(df["Blue-Rarity"], df["BMerchant-Silver"], df["BMerchant-Copper"],
+valueSellId(df["Blue-Rarity"], df["Blue-Count"], df["BMerchant-Silver"], df["BMerchant-Copper"],
             df["BMarket-Silver"], df["BMarket-Copper"])
 
 #Returns stacked bar chart for sell value of Green Unidentified Gear(Uncommon)
-valueSellId(df["Green-Rarity"], df["GMerchant-Silver"], df["GMerchant-Copper"],
+valueSellId(df["Green-Rarity"], df["Green-Count"], df["GMerchant-Silver"], df["GMerchant-Copper"],
             df["GMarket-Silver"], df["GMarket-Copper"])
-
+'''
 #Returns stacked bar chart for sell value of Yellow Unidentified Gear(Rare)
-valueSellId(df["Yellow-Rarity"], df["YMerchant-Silver"], df["YMerchant-Copper"],
+valueSellId(df["Yellow-Rarity"], df["Yellow-Count"], df["YMerchant-Silver"], df["YMerchant-Copper"],
             df["YMarket-Silver"], df["YMarket-Copper"])
 
-'''
